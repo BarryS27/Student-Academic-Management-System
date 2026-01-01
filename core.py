@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import config
 
 class GradeSystem:
@@ -11,17 +10,17 @@ class GradeSystem:
         try:
             return pd.read_csv(filename)
         except FileNotFoundError:
-            print(f"[System] File {filename} not found. Created new.")
             default_cols = config.COLUMNS.get(col_type, [])
             return pd.DataFrame(columns=default_cols)
 
     def _load_all_data(self):
-        for grade in ['G9', 'G10', 'G11', 'G12']:
-            self.data[grade] = self._safe_load(config.FILES[grade], 'Grades')
-        
-        self.data['Self_Dev'] = self._safe_load(config.FILES['Self_Dev'], 'Self_Dev')
-        self.data['Dream_Schools'] = self._safe_load(config.FILES['Dream_Schools'], 'Dream_Schools')
-        self.data['Dream_Majors'] = self._safe_load(config.FILES['Dream_Majors'], 'Dream_Majors')
+        for table_name, filename in config.FILES.items():
+            col_type = config.TABLE_MAPPING.get(table_name)
+            
+            if col_type:
+                self.data[table_name] = self._safe_load(filename, col_type)
+            else:
+                print(f"[System Warning] No mapping found for table '{table_name}' in config.")
 
     def save_all(self):
         try:
@@ -50,4 +49,12 @@ class GradeSystem:
         
         col_idx = df.columns.get_loc(col_name)
         df.iat[row_idx, col_idx] = new_value
+        return True
+
+    def delete_row(self, key, row_idx):
+        df = self.data.get(key)
+        if df is None or row_idx < 0 or row_idx >= len(df):
+            return False
+        
+        self.data[key] = df.drop(row_idx).reset_index(drop=True)
         return True

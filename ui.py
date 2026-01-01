@@ -1,127 +1,204 @@
 import numpy as np
+import pandas as pd
+from tabulate import tabulate
+import config
+import viz
 
 class ConsoleUI:
     def __init__(self, manager):
         self.manager = manager
-        self.numeric_cols = ['Weight', 'Q1_Points', 'Q2_Points', 'Q3_Points', 'Q4_Points']
 
-    def _get_input(self, prompt, is_float=False):
-        val = input(prompt).strip()
-        if val == '':
-            return np.nan
-        if is_float:
+    def _print_menu(self, options, title=None):
+        if title:
+            print(f"\n🔹 --- {title} ---")
+        
+        opts_list = list(options)
+        if not opts_list:
+            print("  (No options available)")
+            return None
+
+        for idx, opt in enumerate(opts_list, 1):
+            print(f"  {idx}. {opt}")
+        
+        while True:
+            choice = input(f"\n👉 Select (1-{len(opts_list)}) or 'q' to back: ").strip()
+            if choice.lower() in ['q', 'exit']:
+                return None
+            
             try:
-                return float(val)
+                idx = int(choice) - 1
+                if 0 <= idx < len(opts_list):
+                    return opts_list[idx]
+                else:
+                    print(f"❌ Invalid number. Please enter 1-{len(opts_list)}.")
             except ValueError:
-                print(f"Invalid number for {prompt.strip()}, storing as NaN.")
+                print("❌ Please enter a number.")
+
+    def _display_df(self, df):
+        if df.empty:
+            print("\n📭 [Table is Empty]")
+            return
+        
+        display_df = df.copy()
+        display_df.index = np.arange(1, len(df) + 1)
+        
+        print("\n" + tabulate(display_df, headers='keys', tablefmt='rounded_outline', showindex=True))
+        print(f"  (Total Rows: {len(df)})\n")
+
+    def _get_input(self, col_name):
+        is_numeric = col_name in config.NUMERIC_COLS
+        prompt = f"✍️  Enter value for '{col_name}'" + (" (number): " if is_numeric else ": ")
+        
+        while True:
+            val = input(prompt).strip()
+            if val == '':
                 return np.nan
-        return val
+            
+            if is_numeric:
+                try:
+                    return float(val)
+                except ValueError:
+                    print(f"❌ '{val}' is not a number. Please try again.")
+                    continue
+            return val
+
 
     def page_add(self):
-        print("\n---------- [ Add_Course_Info ] ----------")
-        grade = input('Please enter the grade you want to add info to: ').strip()
+        # 1. 选表
+        table_name = self._print_menu(config.FILES.keys(), "Select Table to Add")
+        if not table_name: return
+
+        col_key = config.TABLE_MAPPING.get(table_name)
+        columns = config.COLUMNS.get(col_key)
+
+        print(f"\n📝 Adding new row to [{table_name}]...")
+        row_data = {}
         
-        if self.manager.get_data(grade) is None:
-            print("Invalid grade. Please enter one of:", ['G9', 'G10', 'G11', 'G12'])
-            return
+        for col in columns:
+            row_data[col] = self._get_input(col)
 
-        print(f"Adding info to {grade}...")
-        
-        row_data = {
-            'Sem': input('Pls enter its semester: '),
-            'Level': input('Pls enter its level: '),
-            'Code': input('Pls enter its code: '),
-            'Course': input('Pls enter its course: '),
-            'Weight': self._get_input('Pls enter its weight (or press Enter to leave blank): ', is_float=True),
+        print("\nNew Row Preview:")
+        print(row_data)
 
-            'Q1_Points': self._get_input('Pls enter Q1_Points (or press Enter to leave blank): ', is_float=True),
-            'Q2_Points': self._get_input('Pls enter Q2_Points (or press Enter to leave blank): ', is_float=True),
-            'Q3_Points': self._get_input('Pls enter Q3_Points (or press Enter to leave blank): ', is_float=True),
-            'Q4_Points': self._get_input('Pls enter Q4_Points (or press Enter to leave blank): ', is_float=True),
-        }
-
-        print("\nNew row preview:")
-        for k, v in row_data.items():
-            print(f"{k}: {v}")
-
-        yes_no = input('Are you going to add this row? (y/n): ')
-        if yes_no == 'y':
-            self.manager.add_row(grade, row_data)
+        if input('\n💾 Save this row? (y/n): ').lower() == 'y':
+            self.manager.add_row(table_name, row_data)
             self.manager.save_all()
-            print(f'{grade} info updated successfully. \n')
-            print(self.manager.get_data(grade))
+            print(f"✅ Saved to {table_name}.")
         else:
-            return
+            print("🚫 Cancelled.")
 
     def page_edit(self):
-        print("\n---------- [ Edit_Course_Info ] ----------")
-        grade = input('Please enter the grade you want to edit: ').strip()
-        df = self.manager.get_data(grade)
-        
-        if df is None or df.empty:
-            print(f'No data for grade {grade}')
+        table_name = self._print_menu(config.FILES.keys(), "Select Table to Edit")
+        if not table_name: return
+
+        df = self.manager.get_data(table_name)
+        if df.empty:
+            print("⚠️ Table is empty.")
             return
 
-        print('Current data: ')
-        print(df.to_string(index=True))
+        self._display_df(df)
 
-        try:
-            row_input = input('Please enter the row index where you want to edit (1-based): ').strip()
-            row_index = int(row_input) - 1 # 关键修正：减1
-            if row_index < 0 or row_index >= len(df):
-                print('Invalid row number.')
-                return
-        except ValueError:
-            print('Please enter a valid number.')
-            return
-
-        print('Columns you can edit: ')
-        print(', '.join(df.columns))
-
-        col = input('Please enter the column you want to edit: ').strip()
-        if col not in df.columns:
-            print('Invalid column name.')
-            return
-
-        new_value_input = input('Please enter the new value: ').strip()
-        new_value = new_value_input
-
-        if col in self.numeric_cols:
+        while True:
             try:
-                new_value = float(new_value_input)
+                row_input = input(f"👉 Select Row Number to Edit (1-{len(df)}) or 'q': ").strip()
+                if row_input.lower() == 'q': return
+                
+                row_idx = int(row_input) - 1
+                if 0 <= row_idx < len(df):
+                    break
+                print("❌ Invalid row number.")
             except ValueError:
-                print('Invalid number format for this column.')
-                return
+                print("❌ Please enter a number.")
 
-        yes_no = input('Please confirm you want to change the value (y/n): ').strip()
-        if yes_no != 'y':
-            print('Edit cancelled.')
+        print(f"\nChecking Row #{row_input}:")
+        current_row = df.iloc[row_idx]
+        print(tabulate(pd.DataFrame([current_row]), headers='keys', tablefmt='simple'))
+
+        col_name = self._print_menu(df.columns, "Select Column to Change")
+        if not col_name: return
+
+        print(f"\nOld Value: {df.iat[row_idx, df.columns.get_loc(col_name)]}")
+        new_val = self._get_input(col_name)
+        
+        if self.manager.update_cell(table_name, row_idx, col_name, new_val):
+            self.manager.save_all()
+            print("✅ Edit saved.")
+        else:
+            print("❌ System Error.")
+
+    def page_delete(self):
+        table_name = self._print_menu(config.FILES.keys(), "Select Table to Delete From")
+        if not table_name: return
+
+        df = self.manager.get_data(table_name)
+        if df.empty:
+            print("⚠️ Table is empty.")
+        
+        self._display_df(df)
+        
+        try:
+            row_input = input(f"🗑️  Enter ROW Number to DELETE (1-{len(df)}): ").strip()
+            if row_input.lower() == 'q': return
+
+            r_idx = int(row_input) - 1
+            
+            if 0 <= r_idx < len(df):
+                confirm = input(f"⚠️  Are you sure you want to PERMANENTLY delete Row {row_input}? (y/n): ")
+                if confirm.lower() == 'y':
+                    if self.manager.delete_row(table_name, r_idx):
+                        self.manager.save_all()
+                        print("🗑️  Row deleted.")
+                else:
+                    print("🚫 Cancelled.")
+            else:
+                print("❌ Invalid row number.")
+        except ValueError:
+            print("❌ Invalid input.")
+
+    def page_viz(self):
+        grade_tables = [k for k in config.FILES.keys() if k.startswith('G')]
+        
+        if not grade_tables:
+            print("No grade tables found in config.")
             return
 
-        success = self.manager.update_cell(grade, row_index, col, new_value)
-        if success:
-            self.manager.save_all()
-            print('Edit successful!')
-            print(f'Updated row:\n{self.manager.get_data(grade).iloc[row_index]}')
-        else:
-            print("System Error: Update failed.")
+        grade_name = self._print_menu(grade_tables, "Select Grade to Visualize 📊")
+        if not grade_name: return
+
+        df = self.manager.get_data(grade_name)
+        print(f"\n🎨 Generating graph for {grade_name}...")
+        
+        viz.plot_grade_analysis(df, grade_name)
+
+    def page_show(self):
+        table_name = self._print_menu(config.FILES.keys(), "Select Table to View")
+        if table_name:
+            df = self.manager.get_data(table_name)
+            self._display_df(df)
+            input("Press Enter to continue...")
 
     def start_loop(self):
         while True:
-            print("\n---------- My Management System ----------")
-            print("1. [ Add_Course_Info ]")
-            print("2. [ Edit_Course_Info ]")
-            print("3. [ Auto_Save & Exit ]")
+            print("\n" + "="*40)
+            print(" 🎓 Student Academic Manager (SAMS)")
+            print("="*40)
+            print("1. 👁️  View Data Table")
+            print("2. ➕ Add Info")
+            print("3. ✏️  Edit Info")
+            print("4. 🗑️  Delete Info")
+            print("5. 📊 Visualize Data (Charts)")
+            print("6. 🚪 Exit")
             
-            choice = input('Please enter index number: ').strip()
+            choice = input("\n👉 Select operation (1-6): ").strip()
             
-            if choice == '1':
-                self.page_add()
-            elif choice == '2':
-                self.page_edit()
-            elif choice == '3':
+            if choice == '1': self.page_show()
+            elif choice == '2': self.page_add()
+            elif choice == '3': self.page_edit()
+            elif choice == '4': self.page_delete()
+            elif choice == '5': self.page_viz()
+            elif choice == '6':
                 self.manager.save_all()
-                print('Saved.')
+                print("👋 Bye! All data saved.")
                 break
             else:
-                print('No such operation.')
+                print("❌ Invalid choice.")
