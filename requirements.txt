@@ -1,5 +1,7 @@
 pandas
-numpy
 tabulate
 seaborn
 matplotlib
+scipy
+openai
+python-dotenv

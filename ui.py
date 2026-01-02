@@ -181,7 +181,6 @@ class ConsoleUI:
             selected_codes = [s.strip() for s in user_input.split(',')]
             viz.plot_gpa_trend(full_df, selected_codes)
 
-        # Option 3: Radar Chart (Single Grade)
         elif choice == '3':
             grade_name = self._print_menu(grade_tables, "Select Grade for Radar Analysis")
             if grade_name:
@@ -190,6 +189,39 @@ class ConsoleUI:
                 
         else:
             print("❌ Invalid selection.")
+
+    def page_ai_chat(self):
+        print("\n🤖 --- AI Academic Advisor ---")
+        print("⚠️  Privacy Notice: Your query will be sent to OpenAI servers.")
+        
+        confirm = input("👉 Proceed to chat? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("🚫 Cancelled.")
+            return
+
+        print("\n[Persona Configuration]")
+        print(f"Default Style: Professional, Concise, Direct.")
+        
+        custom_sys = input("👉 Enter custom persona (or press ENTER to use Default): ").strip()
+        
+        print("\n📝 What's your question?")
+        user_query = input(">>> ").strip()
+        
+        if not user_query:
+            print("⚠️ Question cannot be empty.")
+            return
+
+        print("\n🔄 Connecting to Neural Network...")
+        
+        response = self.manager.ask_ai(user_query, custom_sys)
+        
+        print("\n" + "="*40)
+        print("💡 INSIGHT:")
+        print("-" * 40)
+        print(response)
+        print("="*40 + "\n")
+        
+        input("Press Enter to continue...")
 
     def page_show(self):
         table_name = self._print_menu(config.FILES.keys(), "Select Table to View")
@@ -207,17 +239,19 @@ class ConsoleUI:
             print("2. ➕ Add Info")
             print("3. ✏️  Edit Info")
             print("4. 🗑️  Delete Info")
-            print("5. 📊 Visualize Data (Charts) [UPDATED]")
-            print("6. 🚪 Exit")
+            print("5. 📊 Visualize Data (Charts)")
+            print("6. 🤖 Chat with AI") 
+            print("7. 🚪 Exit")
             
-            choice = input("\n👉 Select operation (1-6): ").strip()
+            choice = input("\n👉 Select operation (1-7): ").strip()
             
             if choice == '1': self.page_show()
             elif choice == '2': self.page_add()
             elif choice == '3': self.page_edit()
             elif choice == '4': self.page_delete()
             elif choice == '5': self.page_viz()
-            elif choice == '6':
+            elif choice == '6': self.page_ai_chat()
+            elif choice == '7':
                 self.manager.save_all()
                 print("👋 Bye! All data saved.")
                 break
