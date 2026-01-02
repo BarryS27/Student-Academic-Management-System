@@ -4,6 +4,7 @@
 
 > **Status:** Active Development  
 > **Python Version:** 3.8+
+> **Style:** iOS Dark Mode / Industrial
 
 ---
 
@@ -36,7 +37,7 @@ Unlike basic scripts, SAMS includes **data persistence** (CSV), **input validati
 ## 🛠️ Tech Stack
 
 - **Core Logic**: `Python`, `Pandas`, `NumPy`
-- **Visualization**: `Seaborn`, `Matplotlib`
+- **Visualization**: `Seaborn`, `Matplotlib`, `SciPy`
 - **Interface**: `Tabulate`, `Console Input`
 - **Data Storage**: CSV (Local File System)
 
