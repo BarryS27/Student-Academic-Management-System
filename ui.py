@@ -62,9 +62,7 @@ class ConsoleUI:
                     continue
             return val
 
-
     def page_add(self):
-        # 1. 选表
         table_name = self._print_menu(config.FILES.keys(), "Select Table to Add")
         if not table_name: return
 
@@ -110,10 +108,6 @@ class ConsoleUI:
             except ValueError:
                 print("❌ Please enter a number.")
 
-        print(f"\nChecking Row #{row_input}:")
-        current_row = df.iloc[row_idx]
-        print(tabulate(pd.DataFrame([current_row]), headers='keys', tablefmt='simple'))
-
         col_name = self._print_menu(df.columns, "Select Column to Change")
         if not col_name: return
 
@@ -133,6 +127,7 @@ class ConsoleUI:
         df = self.manager.get_data(table_name)
         if df.empty:
             print("⚠️ Table is empty.")
+            return
         
         self._display_df(df)
         
@@ -143,32 +138,58 @@ class ConsoleUI:
             r_idx = int(row_input) - 1
             
             if 0 <= r_idx < len(df):
-                confirm = input(f"⚠️  Are you sure you want to PERMANENTLY delete Row {row_input}? (y/n): ")
-                if confirm.lower() == 'y':
+                if input(f"⚠️ Delete Row {row_input}? (y/n): ").lower() == 'y':
                     if self.manager.delete_row(table_name, r_idx):
                         self.manager.save_all()
                         print("🗑️  Row deleted.")
-                else:
-                    print("🚫 Cancelled.")
             else:
                 print("❌ Invalid row number.")
         except ValueError:
             print("❌ Invalid input.")
 
     def page_viz(self):
+        print("\n📊 --- Visualization Hub ---")
+        print("1. Subject Breakdown (Thin Bar Chart) - View specific grade performance")
+        print("2. GPA Trend (Smooth Line) - View progress from G9 to G12")
+        print("3. Grade Distribution (Radar Chart) - View subject balance")
+        
+        choice = input("\n👉 Select Chart Type (1-3): ").strip()
+        
         grade_tables = [k for k in config.FILES.keys() if k.startswith('G')]
-        
-        if not grade_tables:
-            print("No grade tables found in config.")
-            return
 
-        grade_name = self._print_menu(grade_tables, "Select Grade to Visualize 📊")
-        if not grade_name: return
+        if choice == '1':
+            grade_name = self._print_menu(grade_tables, "Select Grade")
+            if grade_name:
+                df = self.manager.get_data(grade_name)
+                viz.plot_subject_breakdown(df, grade_name)
 
-        df = self.manager.get_data(grade_name)
-        print(f"\n🎨 Generating graph for {grade_name}...")
-        
-        viz.plot_grade_analysis(df, grade_name)
+        elif choice == '2':
+            print("\n🔄 Loading history data...")
+            full_df = self.manager.get_all_grades_combined()
+            
+            if full_df.empty:
+                print("⚠️ No data found across G9-G12.")
+                return
+
+            print("\nExisting Subjects across years:")
+            unique_codes = sorted(full_df['Code'].unique().tolist())
+            print(f"[{', '.join(unique_codes)}]")
+            
+            user_input = input("\n✍️  Enter Subject Codes to track (comma separated, e.g., 'MA101, ENG09'): ").strip()
+            if not user_input: return
+            
+            selected_codes = [s.strip() for s in user_input.split(',')]
+            viz.plot_gpa_trend(full_df, selected_codes)
+
+        # Option 3: Radar Chart (Single Grade)
+        elif choice == '3':
+            grade_name = self._print_menu(grade_tables, "Select Grade for Radar Analysis")
+            if grade_name:
+                df = self.manager.get_data(grade_name)
+                viz.plot_radar_distribution(df, grade_name)
+                
+        else:
+            print("❌ Invalid selection.")
 
     def page_show(self):
         table_name = self._print_menu(config.FILES.keys(), "Select Table to View")
@@ -186,7 +207,7 @@ class ConsoleUI:
             print("2. ➕ Add Info")
             print("3. ✏️  Edit Info")
             print("4. 🗑️  Delete Info")
-            print("5. 📊 Visualize Data (Charts)")
+            print("5. 📊 Visualize Data (Charts) [UPDATED]")
             print("6. 🚪 Exit")
             
             choice = input("\n👉 Select operation (1-6): ").strip()

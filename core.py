@@ -58,3 +58,23 @@ class GradeSystem:
         
         self.data[key] = df.drop(row_idx).reset_index(drop=True)
         return True
+    
+    def get_all_grades_combined(self):
+        combined_data = []
+        grade_levels = ['G9', 'G10', 'G11', 'G12']
+        
+        for grade in grade_levels:
+            df = self.data.get(grade)
+            if df is not None and not df.empty:
+                cols = ['Q1_Points', 'Q2_Points', 'Q3_Points', 'Q4_Points']
+                valid_cols = [c for c in cols if c in df.columns]
+                if valid_cols:
+                    temp_df = df.copy()
+                    temp_df['Total_Score'] = temp_df[valid_cols].sum(axis=1)
+                    temp_df['Grade_Level'] = grade
+                    combined_data.append(temp_df[['Code', 'Course', 'Total_Score', 'Grade_Level']])
+        
+        if not combined_data:
+            return pd.DataFrame()
+            
+        return pd.concat(combined_data, ignore_index=True)
