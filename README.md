@@ -49,7 +49,68 @@ Make sure you have Python installed. It is recommended to use a virtual environm
 
 ### 1. Installation
 Clone the repository and install the required dependencies:
-
 ```bash
 # Install dependencies from requirements.txt
 pip install -r requirements.txt
+```
+
+### 2. Run the Application
+
+Once dependencies are installed, start the system by running:
+```bash
+python main.py
+```
+
+---
+
+## 📂 Project Structure
+
+The project follows a modular design to ensure maintainability:
+```text
+.
+├── main.py           # 🚀 Entry Point: Initializes the Controller
+├── core.py           # 🧠 Model: Handles Data Logic & CSV CRUD operations
+├── ui.py             # 🖥️ View: Handles User Interaction & Menu rendering
+├── viz.py            # 🎨 Visualization: Generates Seaborn/Matplotlib charts
+├── config.py         # ⚙️ Configuration: File paths & Column definitions
+├── requirements.txt  # 📦 Dependencies list
+├── .gitignore        # 🔒 Privacy: Excludes personal CSV data from Git
+└── README.md         # 📖 Documentation
+```
+
+---
+
+## ⚙️ Configuration
+
+SAMS is designed to be flexible. You can customize the system behavior in `config.py`:
+
+* **Add New Academic Years**: Simply add a new key (e.g., `'G8': 'G8.csv'`) to the `FILES` dictionary.
+* **Modify Data Columns**: Adjust the `COLUMNS` dictionary to track different metrics (e.g., adding `'Midterm_Exam'` or `'Teacher_Comment'`).
+* **Input Validation**: The `NUMERIC_COLS` list defines which fields require strict numeric input.
+
+---
+
+## 🔒 Privacy & Data Security
+
+This system is designed with privacy in mind:
+
+* **Local Storage**: All data is stored locally in `.csv` files on your machine.
+* **Git Protection**: The included `.gitignore` file ensures your personal grades, dream school lists, and private notes are **never uploaded** to GitHub.
+
+---
+
+## 🔮 Future Roadmap
+
+Things I plan to add in the future:
+
+* [ ] **GPA Calculator**: Auto-calculate weighted/unweighted GPA based on course weights.
+* [ ] **Export to PDF**: Generate a summary report for college counselors.
+* [ ] **GUI Version**: Port the interface to a web app using Streamlit.
+
+---
+
+## 📄 License
+
+This project is open-source and available for personal use.
+
+*Built with Python 🐍*
