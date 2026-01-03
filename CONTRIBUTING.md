@@ -9,7 +9,7 @@ To maintain code quality and project stability, please follow these guidelines.
 1.  **Fork the Repository**: Create your own copy of the project on your GitHub account.
 2.  **Clone Locally**: 
     ```bash
-    git clone [https://github.com/YOUR_USERNAME/Project-Student-Academic-Management-System.git](https://github.com/YOUR_USERNAME/Project-Student-Academic-Management-System.git)
+    git clone [https://github.com/BarryS27/Project-Student-Academic-Management-System.git](https://github.com/BarryS27/Project-Student-Academic-Management-System.git)
     ```
 3.  **Install Dependencies**: Ensure you have all required libraries installed:
     ```bash
