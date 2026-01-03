@@ -14,6 +14,12 @@ SAMS is a personal data management system built with a modular **MVC (Model-View
 
 Unlike basic scripts, SAMS includes **data persistence** (CSV), **input validation**, and **advanced data visualization** using Seaborn to analyze academic strengths.
 
+## 🎯 Target Audience
+
+This project is designed as a local academic management tool for high school students with basic Python knowledge, especially suitable for learners in environments like the U.S. high school curriculum. It helps users practice Python, file handling (CSV), and basic data visualization while managing academic records locally.
+
+⚠️ Note: This is **not** intended for large-scale deployment or production use.
+
 ## ✨ Key Features
 
 ### 1. 📊 Smart Data Management
