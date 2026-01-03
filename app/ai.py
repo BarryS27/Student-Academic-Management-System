@@ -1,5 +1,5 @@
 import os
-import config
+from . import config
 
 try:
     from openai import OpenAI
@@ -16,7 +16,9 @@ class AIAssistant:
 
     def _initialize_client(self):
         if AI_AVAILABLE:
-            load_dotenv()
+            env_path = config.BASE_DIR / '.env'
+            load_dotenv(dotenv_path=env_path)
+            
             api_key = os.getenv("API_KEY")
             if api_key:
                 self.client = OpenAI(api_key=api_key)

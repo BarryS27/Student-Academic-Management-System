@@ -1,6 +1,6 @@
 import pandas as pd
-import config
-from ai import AIAssistant
+from . import config
+from .ai import AIAssistant
 
 class GradeSystem:
     def __init__(self):

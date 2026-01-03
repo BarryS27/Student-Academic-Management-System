@@ -26,10 +26,12 @@ To maintain code quality and project stability, please follow these guidelines.
 ### 2. Coding Standards
 * **PEP 8 Compliance**: All Python code must follow PEP 8 standards for readability.
 * **Docstrings**: Add descriptive docstrings to all new functions and classes to explain their purpose.
-* **MVC Architecture**: Respect the modular structure:
-    * `core.py`: Data logic and CSV CRUD operations.
-    * `ui.py`: User interface and menu rendering.
-    * `viz.py`: Data visualization and charts.
+* **Package-based MVC Architecture**: Respect the modular structure within the `app/` package:
+    * `app/core.py`: **Model**. Handles all data logic, state management, and CSV CRUD operations.
+    * `app/ui.py`: **View**. Handles console user interaction. **Do not** access files or modify data directly here; use `core` methods instead.
+    * `app/viz.py`: **Visualization**. Dedicated solely to generating Matplotlib charts.
+    * `app/ai.py`: **Service**. Encapsulates all external AI API interactions and error handling.
+    * `app/config.py`: **Configuration**. Centralizes constants and file paths. **Never hardcode file paths** in other modules; always import from `config`.
 
 ### 3. Submission
 1.  Push your changes to your fork.

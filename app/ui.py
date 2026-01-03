@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 from tabulate import tabulate
-import config
-import viz
+from . import config
+from . import viz
 
 class ConsoleUI:
     def __init__(self, manager):
