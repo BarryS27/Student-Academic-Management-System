@@ -3,7 +3,7 @@
 **A comprehensive, Python-based CLI tool designed for high school students to track academic performance, manage portfolios, and visualize progress.**
 
 > **Status:** Active Development  
-> **Python Version:** 3.12
+> **Python Version:** 3.12  
 > **Style:** iOS Dark Mode / Industrial / Minimalist
 
 ---
